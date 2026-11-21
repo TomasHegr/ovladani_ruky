@@ -48,7 +48,7 @@ void init(void)
     
 
 
-    //inicializace timeru
+    //inicializace timeru - TIM2 ->3 kanály
    
 
     TIM2_TimeBaseInit(TIM2_PRESCALER_16, 20000 - 1); //f= 50 HZ
@@ -94,7 +94,7 @@ void init(void)
  #define Ukazovacek ADC2_CHANNEL_3
  void adc_init(void)
 {
-    // Pin - analog, vypnutí Schmittova klopného obvodu
+    // vypnutí Schmittova klopného obvodu
     ADC2_SchmittTriggerConfig(ADC2_SCHMITTTRIG_CHANNEL5, DISABLE);
 
     ADC2_SchmittTriggerConfig(ADC2_SCHMITTTRIG_CHANNEL4, DISABLE);
