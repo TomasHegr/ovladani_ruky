@@ -22,6 +22,13 @@
 #define ADC_prostrednicek_port GPIOB
 #define ADC_prostrednicek_pin GPIO_PIN_4
 
+#define Ukazovacek_pwm_port GPIOA
+#define Ukazovacek_pwm_pin GPIO_PIN_3
+
+#define ADC_ukazovacek_port  GPIOB
+#define ADC_ukazovacek_pin GPIO_PIN_3
+
+
  
 void init(void)
 {
@@ -35,11 +42,14 @@ void init(void)
     GPIO_Init(Prostrednicek_pwm_port, Prostrednicek_pwm_pin, GPIO_MODE_OUT_PP_LOW_SLOW);
     GPIO_Init(ADC_prostrednicek_port,ADC_prostrednicek_pin,GPIO_MODE_IN_FL_NO_IT);
 
+    GPIO_Init(Ukazovacek_pwm_port,Ukazovacek_pwm_pin,GPIO_MODE_OUT_PP_LOW_SLOW);
+    GPIO_Init(ADC_ukazovacek_port,ADC_ukazovacek_pin,GPIO_MODE_IN_FL_NO_IT);
+
     
 
 
     //inicializace timeru
-    uint16_t hodnota= 500;
+   
 
     TIM2_TimeBaseInit(TIM2_PRESCALER_16, 20000 - 1); //f= 50 HZ
 
@@ -54,15 +64,25 @@ void init(void)
         //pwm druhý kanál
 
         TIM2_OC2Init(TIM2_OCMODE_PWM1,
-            TIM2_OUTPUTSTATE_ENABLE,    //povolení fyzického výstupu
-            hodnota,            //počáíteční hodnota compare registru
-            TIM2_OCPOLARITY_HIGH    //spínám log 1
+            TIM2_OUTPUTSTATE_ENABLE,    
+            500,            
+            TIM2_OCPOLARITY_HIGH    
         );
+
+        //pwm třetí kanál
+        TIM2_OC3Init(TIM2_OCMODE_PWM1,
+            TIM2_OUTPUTSTATE_ENABLE,    
+            500,            
+            TIM2_OCPOLARITY_HIGH    
+        );
+
+
     
 
     TIM2_Cmd(ENABLE);
     TIM2_OC1PreloadConfig(ENABLE);
     TIM2_OC2PreloadConfig(ENABLE);
+    TIM2_OC3PreloadConfig(ENABLE);
 
 
 
@@ -70,6 +90,8 @@ void init(void)
  //inicializace ADC převodníku
  #define Prostrednicek ADC2_CHANNEL_4
  #define Prstenicek ADC2_CHANNEL_5
+
+ #define Ukazovacek ADC2_CHANNEL_3
  void adc_init(void)
 {
     // Pin - analog, vypnutí Schmittova klopného obvodu
@@ -77,7 +99,9 @@ void init(void)
 
     ADC2_SchmittTriggerConfig(ADC2_SCHMITTTRIG_CHANNEL4, DISABLE);
 
-    // ADC Clock musí být 1MHz - 6MHz (16MHz / 4)
+     ADC2_SchmittTriggerConfig(ADC2_SCHMITTTRIG_CHANNEL3, DISABLE)  ;
+
+    //prescaler
     ADC2_PrescalerConfig(ADC2_PRESSEL_FCPU_D4);
 
     // Zarovnání výsledku doprava
@@ -86,6 +110,7 @@ void init(void)
     // Před spuštěním ADC vyberu kanál, který budu používat
     ADC2_Select_Channel(Prstenicek);
     ADC2_Select_Channel(Prostrednicek);
+    ADC2_Select_Channel(Ukazovacek);
 
     // Zapnutí ADC
     ADC2_Cmd(ENABLE);
@@ -94,19 +119,17 @@ void init(void)
     ADC2_Startup_Wait();
 }
 
-
- //rovný stav adc= 513
-//maximálně ohnuto stav adc= 720
-
-
-#define Prstenicek_rovny_adc 580
-#define Prstenick_max_adc   820
 #define servo_max 2500
 #define servo_min 500
+
+#define Prstenicek_rovny_adc 580
+#define Prstenicek_max_adc   820
 
 #define Prostrednicek_rovny_adc 447
 #define Prostrednicek_max_adc 730
 
+#define Ukazovacek_rovny_adc 436
+#define Ukazovacek_max_adc  735
 
 int main(void)
 {
@@ -115,47 +138,40 @@ int main(void)
     uint16_t hodnota= 0;
     uint16_t adc_hodnota_prstenicek ;
     uint16_t adc_hodnota_prostrednicek;
+    uint16_t adc_hodnota_ukazovacek;
 
     uint16_t pwm_hodnota_prstenicek;
     uint16_t pwm_hodnota_prostrednicek;
+    uint16_t pwm_hodnota_ukazovacek;
     init();
     adc_init();
 
     while (1) {
         if (milis() - time > 100) {
             time = milis();
+
             adc_hodnota_prstenicek=ADC_get(Prstenicek); // 0 - 1024
-            adc_hodnota_prostrednicek =ADC_get(Prostrednicek);
-
-            //pwm_hodnota= 500 + ((uint32_t)adc_hodnota) * (2500-500)/1023; // kód pro staré senzoy
             
-
-            //už nové senzory (funkční)
-            // pro serva které mají hodnotu rovného prstu v 0˚
-
-            //pwm_hodnota=500 +((int32_t)adc_hodnota - adc_rovny) *(servo_max-servo_min)/(adc_max_ohyb-adc_rovny);
-
-            // pro serva které mají hodnotu rovného prstu ve 180 ˚
-
             pwm_hodnota_prstenicek=2200 -
-            ((int32_t)adc_hodnota_prstenicek - Prstenicek_rovny_adc) *(servo_max   -  servo_min)/(Prstenick_max_adc     -    Prstenicek_rovny_adc);
+            ((int32_t)adc_hodnota_prstenicek - Prstenicek_rovny_adc) *(servo_max -servo_min)/(Prstenicek_max_adc - Prstenicek_rovny_adc);
 
 
-
-            
-
-            pwm_hodnota_prostrednicek=500 +((int32_t)adc_hodnota_prostrednicek - Prostrednicek_rovny_adc) *(servo_max    -   servo_min)/(Prostrednicek_max_adc  -   Prostrednicek_rovny_adc);
-
-
-
-
-            if(pwm_hodnota_prstenicek > 2200){
+             if(pwm_hodnota_prstenicek > 2200){
                 pwm_hodnota_prstenicek=2200;
             }
             if(pwm_hodnota_prstenicek < 500){
                 pwm_hodnota_prstenicek=500;
             }
 
+            TIM2_SetCompare1(pwm_hodnota_prstenicek);  //pin PD4
+
+            //------------------------------------------------------------------------------------------------
+
+            adc_hodnota_prostrednicek =ADC_get(Prostrednicek);
+
+            pwm_hodnota_prostrednicek=500 +
+            ((int32_t)adc_hodnota_prostrednicek - Prostrednicek_rovny_adc) *(servo_max - servo_min)/(Prostrednicek_max_adc - Prostrednicek_rovny_adc);
+            
             if (pwm_hodnota_prostrednicek > 2500) {
                 pwm_hodnota_prostrednicek = 2500;
             }
@@ -163,10 +179,32 @@ int main(void)
                 pwm_hodnota_prostrednicek = 500;
             }
 
-            TIM2_SetCompare1(pwm_hodnota_prstenicek);  //pin PD4
             TIM2_SetCompare2(pwm_hodnota_prostrednicek);  //PIN PD3
-            
-            printf("ADC1: %u  ->  PWM1: %u us   ADC2: %u  ->  PWM2: %u us\n", adc_hodnota_prstenicek, pwm_hodnota_prstenicek,adc_hodnota_prostrednicek, pwm_hodnota_prostrednicek);
+
+            //------------------------------------------------------------------------------------------------
+
+            adc_hodnota_ukazovacek=ADC_get(Ukazovacek);
+
+            pwm_hodnota_ukazovacek=500 +
+            ((int32_t)adc_hodnota_ukazovacek - Ukazovacek_rovny_adc) *(servo_max - servo_min)/(Ukazovacek_max_adc - Ukazovacek_rovny_adc);
+
+             if (pwm_hodnota_ukazovacek > 2500) {
+                pwm_hodnota_ukazovacek = 2500;
+            }
+            if (pwm_hodnota_ukazovacek < 500) {
+                pwm_hodnota_ukazovacek = 500;
+            }
+
+
+            TIM2_SetCompare3(pwm_hodnota_ukazovacek);  
+
+
+
+           
+
+        
+            printf("Prtstenicek adc: %u -> PWM: %u us  Prostrednicek ADC: %u -> PWM: %u us Ukazovacek adc: %u -> pwm: %u us \n ", 
+                adc_hodnota_prstenicek, pwm_hodnota_prstenicek,adc_hodnota_prostrednicek, pwm_hodnota_prostrednicek,adc_hodnota_ukazovacek,pwm_hodnota_ukazovacek);
         }
         //delay_ms(333);
     }
