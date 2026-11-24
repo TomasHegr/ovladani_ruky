@@ -20,11 +20,11 @@ Co už je hotovo
 Co je v procesu
 -----------------------
 * Výroba rukavice, co  ovládá model v manuálním režimu 
-* Schéma 
 * případně další gesta v režimu gest
 
 Co ještě chybí
 -----------------------
+* schéma
 * Domodelovat podstavu pro model 
 * Nechat vyrobit DPS.
 * Osadit a zprovoznit dps.
