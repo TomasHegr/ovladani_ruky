@@ -46,7 +46,7 @@
 #define GESTO_PIN    GPIO_PIN_6
 
 
-//dočasné použití tlačítka na stm8 nucleo kitu
+//makro pro tlčítko na přepnutí režimu
 #define BTN_PORT GPIOB
 #define BTN_PIN  GPIO_PIN_7
 
@@ -149,8 +149,8 @@ void init(void)
  #define Prstenicek ADC2_CHANNEL_5
  #define Ukazovacek ADC2_CHANNEL_3
  #define Palec ADC2_CHANNEL_2
-
  #define Malicek ADC2_CHANNEL_1
+ 
  void adc_init(void)
 {
     // vypnutí Schmittova klopného obvodu
@@ -385,7 +385,7 @@ int main(void)
                 TIM3_SetCompare2(pwm_hodnota_malicek);
 
             }
-               if(gesta_rezimy==2){    //peace sign
+               if(gesta_rezimy==2){    //✌️
                 
                 pwm_hodnota_palec =2200;
 
@@ -435,7 +435,7 @@ int main(void)
                 TIM3_SetCompare2(pwm_hodnota_malicek);
 
             }
-              if(gesta_rezimy==5){    //metal
+              if(gesta_rezimy==5){    //🤟
                 
                 pwm_hodnota_prostrednicek=2500;
                 pwm_hodnota_malicek=2200;
