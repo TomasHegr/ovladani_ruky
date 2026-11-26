@@ -150,7 +150,7 @@ void init(void)
  #define Ukazovacek ADC2_CHANNEL_3
  #define Palec ADC2_CHANNEL_2
  #define Malicek ADC2_CHANNEL_1
- 
+
  void adc_init(void)
 {
     // vypnutí Schmittova klopného obvodu
@@ -189,8 +189,8 @@ void init(void)
 #define servo_max 2500
 #define servo_min 500
 
-#define Prstenicek_rovny_adc 580
-#define Prstenicek_max_adc   820
+#define Prstenicek_rovny_adc 580 
+#define Prstenicek_max_adc   870
 
 #define Prostrednicek_rovny_adc 447
 #define Prostrednicek_max_adc 730
@@ -198,8 +198,8 @@ void init(void)
 #define Ukazovacek_rovny_adc 436
 #define Ukazovacek_max_adc  735
 
-#define Palec_rovny_adc 468
-#define Palec_max_adc   780
+#define Palec_rovny_adc 470
+#define Palec_max_adc   735
 
 #define Malicek_rovny_adc 420
 #define Malicek_max_adc 703
@@ -356,13 +356,15 @@ int main(void)
 
         if(rezim == 1){ //režim gest
 
-            printf("Režim přepnut\n");
+            printf("Režim přepnut\r");
             
             if(gesta_rezimy==0){    //výchozí poloha
 
                 pwm_hodnota_palec =pwm_hodnota_ukazovacek =pwm_hodnota_prostrednicek = 500;
+                
                 pwm_hodnota_prstenicek=pwm_hodnota_malicek= 2200;
                 
+                delay_ms(1);
                 TIM2_SetCompare1(pwm_hodnota_prstenicek);
                 TIM2_SetCompare2(pwm_hodnota_prostrednicek);
                 TIM2_SetCompare3(pwm_hodnota_ukazovacek);
@@ -417,14 +419,14 @@ int main(void)
 
             }
 
-            if(gesta_rezimy==4){    //prostrednicek
+            if(gesta_rezimy==4){    //ukazovacek
                 
                 pwm_hodnota_palec = 2200;
-                pwm_hodnota_ukazovacek=2200;
+                pwm_hodnota_ukazovacek=500;
 
                 pwm_hodnota_prstenicek=500;
                 pwm_hodnota_malicek=500;
-                pwm_hodnota_prostrednicek=500;
+                pwm_hodnota_prostrednicek=2200;
                
                 
                 TIM2_SetCompare1(pwm_hodnota_prstenicek);
