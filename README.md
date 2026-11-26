@@ -2,7 +2,7 @@ Dlouhodobá maturitní práce
 ===========================
 
 Neoficiální repozitář sloužící pro testy a vývoj
-* Poslední úprava: 21. 11. 2026 17:09
+* Poslední úprava: 25. 11. 2026 22:00
 
 Poznámky
 -----------------------
